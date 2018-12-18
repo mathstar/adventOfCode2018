@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class Circle {
-    private final List<Marble> marbles;
+    private List<Marble> marbles;
     private Marble currentMarble;
 
     public Circle(int capacity) {
@@ -18,20 +18,7 @@ public class Circle {
             return;
         }
 
-        int desiredIndex = marbles.indexOf(currentMarble);
-
-        Direction direction = relativePosition.getDirection();
-        switch (direction) {
-            case CLOCKWISE:
-                desiredIndex += relativePosition.getDistance();
-                break;
-            case COUNTER_CLOCKWISE:
-                desiredIndex -= relativePosition.getDistance();
-                desiredIndex += 1;
-        }
-
-        desiredIndex = rollIndex(desiredIndex);
-        marbles.add(desiredIndex, marble);
+        marbles.add(getRelativeIndex(relativePosition), marble);
     }
 
     public void removeMarble(Marble marble) {
@@ -46,6 +33,10 @@ public class Circle {
     }
 
     public Marble getMarble(RelativePosition relativePosition) {
+        return marbles.get(getRelativeIndex(relativePosition));
+    }
+
+    private int getRelativeIndex(RelativePosition relativePosition) {
         int desiredIndex = marbles.indexOf(currentMarble);
 
         Direction direction = relativePosition.getDirection();
@@ -58,7 +49,7 @@ public class Circle {
         }
 
         desiredIndex = rollIndex(desiredIndex);
-        return marbles.get(desiredIndex);
+        return desiredIndex;
     }
 
     private int rollIndex(int index) {
@@ -71,11 +62,39 @@ public class Circle {
         return index;
     }
 
+    private void garbageCollect() {
+        if(marbles.size() >= 4000) {
+            int newStart = rollIndex(marbles.indexOf(currentMarble) - 1000);
+
+            List<Marble> newMarbles = new ArrayList<>(5000);
+            int count = 0;
+            for(int i = newStart; count <= 2000; i++) {
+                count++;
+                newMarbles.add(marbles.get(rollIndex(i)));
+            }
+
+            marbles = newMarbles;
+        }
+    }
+
     @Override
     public String toString() {
+        int zeroIndex = marbles.indexOf(new Marble(0));
 
-        return marbles.stream()
-                .map(marble -> marble == currentMarble ? "(" + marble.getId() + ")" : String.valueOf(marble.getId()))
-                .collect(Collectors.joining(" "));
+        StringBuilder stringBuilder = new StringBuilder();
+        for(int i = 0; i < marbles.size(); i++) {
+            Marble marble = marbles.get(rollIndex(zeroIndex + i));
+            if(marble.equals(currentMarble)) {
+                stringBuilder.append(String.format("(%d)", marble.getId()));
+            } else {
+                stringBuilder.append(marble.getId());
+            }
+            stringBuilder.append(" ");
+        }
+        return stringBuilder.toString();
+
+//        return marbles.stream()
+//                .map(marble -> marble == currentMarble ? "(" + marble.getId() + ")" : String.valueOf(marble.getId()))
+//                .collect(Collectors.joining(" "));
     }
 }

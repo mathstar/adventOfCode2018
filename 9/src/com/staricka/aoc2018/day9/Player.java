@@ -1,25 +1,23 @@
 package com.staricka.aoc2018.day9;
 
 public class Player {
-    private static int nextId = 0;
-
     private final int id;
-    private int score;
+    private long score;
 
-    public Player() {
-        id = nextId++;
+    public Player(int id) {
+        this.id = id;
         score = 0;
     }
 
     public void winMarble(Marble marble) {
-        score += marble.getId();
+        score = Math.addExact(score, (long)marble.getId());
     }
 
     public int getId() {
         return id;
     }
 
-    public int getScore() {
+    public long getScore() {
         return score;
     }
 }
